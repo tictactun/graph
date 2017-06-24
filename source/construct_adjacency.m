@@ -2,11 +2,15 @@ function A = construct_adjacency(data, config)
     % params & variables
     nVertices = size(data, 1);
     % undirected graph => distance matrix (not adj matrix)
+    threshold = 0.1;
     s = zeros(nVertices, nVertices);
     for i = 1:nVertices
         for j = (i + 1): nVertices
             s(i, j) = get_similarity(data(i, :), data(j, :), ...
                 config.preSigma, config);
+%             if s(i, j) < threshold
+%                 s(i, j) = 0;
+%             end
             s(j, i) = s(i, j);
         end
         s(i, i) = 0;
@@ -17,7 +21,9 @@ function A = construct_adjacency(data, config)
     [p, dk] = get_kNN(k, s);
     
     % re-weighting: Gaussian or LLS
-    sig = dk/3; % ref from Tony
+    sig = config.preSigma;
+%     sig = dk/3; % ref from Tony
+    
     a = zeros(nVertices, nVertices);
     for i = 1:nVertices
         for j = (i + 1):nVertices
@@ -43,8 +49,12 @@ end
 function sim = get_similarity(x1, x2, sigma, config)
     % should use ML to learn this distance
     % current: Euclidean distance
-    if config.learningMode > 0
+    if config.learningMode == 2
         [d, ~] = predict(config.disModel, abs(x1 - x2));     
+    elseif config.learningMode == 1
+        [c1, ~] = predict(config.disModel, x1);
+        [c2, ~] = predict(config.disModel, x2);
+        d = norm(c1 - c2, 2);
     else
         d = norm(x1 - x2, 2); 
     end

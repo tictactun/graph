@@ -28,8 +28,8 @@ end
 
 function error = get_rmse(y, p)
     n = length(y);
-    error = norm(y - p, 2) / sqrt(n);
-%     error = norm(y - p, 2);   
+%     error = norm(y - p, 2) / sqrt(n);
+    error = norm(y - p, 2);   
 end
 
 function accuracy = get_accuracy(y, p, e)

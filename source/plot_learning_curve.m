@@ -1,20 +1,20 @@
-function plot_learning_curve()
+function plot_learning_curve(mode)
 
     % Load setup
     [input, config] = setup();    
     % Load csv file into 2 parts: construction and completion
     [dataX, dataY] = process_data(input);  
-    
-    % pre training
-%     rMaxSamples = 0.6 + [0:7] * 0.05;
-%     rAvaiSamples = 0.4;
-%     config.alg = 2;
 
-    rMaxSamples = 1;
-    rAvaiSamples = 0.4 + [0:11] * 0.05;
-    config.alg = 1;
-
-    
+    if mode == 1
+        rMaxSamples = 0.6 + [0:7] * 0.05;
+        rAvaiSamples = 0.4;
+        config.alg = 2;
+    else
+        rMaxSamples = 1;
+        rAvaiSamples = 0.6 + [0:7] * 0.05;
+        config.alg = 1;
+    end
+  
     report.accTest = zeros(length(rAvaiSamples), length(rMaxSamples));
     report.accTrain = zeros(length(rAvaiSamples), length(rMaxSamples));
     report.rmseTest = zeros(length(rAvaiSamples), length(rMaxSamples));
@@ -23,26 +23,33 @@ function plot_learning_curve()
     report.meTrain = zeros(length(rAvaiSamples), length(rMaxSamples));
 
     kFold = 5;
+    learned = false;
+    selected = false;
+    xCols = [];
     for r=1:length(rAvaiSamples)
 %         config.rBand = rAvaiSamples(r)
         fprintf('rAvai = %.2f\n', rAvaiSamples(r));
         nAvaiSamples = ceil(rAvaiSamples(r) * size(dataY, 1));
         step = ceil((size(dataY, 1) - nAvaiSamples) / kFold) - 1;
         for k = 0:kFold-1
-            fprintf('Fold = %d\n', k);
+%             fprintf('Fold = %d\n', k);
             avaiSampleSet = step * k + [1:nAvaiSamples];
-            if input.rAvaiSamples > 0
+            if input.rAvaiSamples > 0 && selected == false
+                selected = true;
                 avaiX = dataX(avaiSampleSet, :);
                 avaiY = dataY(avaiSampleSet, :);
                 % correlation
                 if config.nSelectedFeatures > 0
                     xCols = select_features(avaiX, avaiY, ...
                                             config.nSelectedFeatures);
+                end
+                if ~isempty(xCols)
                     avaiX = avaiX(:, xCols);
                     dataX = dataX(:, xCols);
                 end
                 % distance learning
-                if config.learningMode > 0
+                if config.learningMode > 0 && learned == false
+                   learned = true;
                    config.disModel = learn_distance(avaiX, avaiY, ...
                                                 config.learningMode);
                 end                
@@ -74,28 +81,31 @@ function plot_learning_curve()
     end
 
     close all
-%     figure(); hold on
-%     title('Learning curve of % Acurracy ');
-%     plot(maxSamples, report.accTrain, maxSamples, report.accTest);   
-%     legend('Sampled', 'Unsampled', 'Location', 'northeast');
-%     legend('boxoff');
-%     xlabel('Maximum samples');
-%     ylabel('Accuracy in %');
-% 
+
     if length(rAvaiSamples) == 1
         rSamples = rMaxSamples;
     else
         rSamples = rAvaiSamples;
     end
-        config.alg = 1;
+    
     figure(); hold on
-    title('RMSE learning curve');
+    title('Acurracy for 15% interval');
+    plot(rSamples, report.accTrain(:), rSamples, report.accTest(:));   
+    legend('Sampled', 'Unsampled', 'Location', 'northeast');
+    legend('boxoff');
+    xlabel('Maximum samples');
+    ylabel('Accuracy in %');
+
+    figure(); hold on
+    title('Norm 2');
+    ylabel('Norm 2');
+%     ylabel('RMSE');
+%     title('RMSE');
     plot(rSamples, report.rmseTrain(:), rSamples, report.rmseTest(:));   
     legend('Sampled', 'Unsampled', 'Location', 'northeast');
     legend('boxoff');
     xlabel('Maximum samples');
-    ylabel('RMSE'); 
-    
+        
     figure(); hold on
     title('Percentage Error distribution');
     plot(rSamples, report.meTrain(:), rSamples, report.meTest(:));

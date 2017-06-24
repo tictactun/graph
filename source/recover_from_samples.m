@@ -1,8 +1,10 @@
 function f_hat = recover_from_samples(y, M, Pw, lGraph, config)   
     if 1 == config.kernelMode 
         lh = diag(lGraph.Dk);
-    else
+    elseif 2 == config.kernelMode
         lh = diag(config.kernel(lGraph.Dk)); 
+    else
+        lh = 1;
     end
 
     % solving eq (10) in the paper
@@ -12,9 +14,9 @@ function f_hat = recover_from_samples(y, M, Pw, lGraph, config)
     A = MV' * Pw_inv * MV + config.gamma * lh;
     B = MV' * Pw_inv * y;
     
-    C = MV' * Pw_inv * MV;
-    D = MV' * Pw_inv * y; 
-    E = config.gamma * ones(1, lGraph.nVertices) * lGraph.Vk * lh;
+%     C = MV' * Pw_inv * MV;
+%     D = MV' * Pw_inv * y; 
+%     E = config.gamma * ones(1, lGraph.nVertices) * lGraph.Vk * lh;
 
     f_hat = A\B; % Is this correct?
 %     f_hat = inv(A) * B;

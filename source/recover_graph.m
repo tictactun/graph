@@ -11,7 +11,7 @@ function [f, wSet] = recover_graph(lGraph, config)
     else
         % Select and Recover algorithm
         [wSet, Pw] = select_and_recover(lGraph, config);
-        Pw = ones(length(wSet), 1) / lGraph.nVertices;
+%         Pw = ones(length(wSet), 1) / lGraph.nVertices;
     end
     % recover
     y = lGraph.data(wSet, :);
