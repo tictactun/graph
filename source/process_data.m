@@ -1,23 +1,20 @@
-function [dataX, dataY] = process_data(input)
-    dataset = csvread(input.filename, 1, 0);    
-    dataset = dataset(1:input.dataSize, input.nRedundantFeatures + 1:end);
-    
+function [X, y] = process_data(inputParams)
+   
+    data = csvread(inputParams('filename'), 1, 0);    
+    %{
+    % train dataset
     ntrain = ceil(input.rtrain * input.dataSize);
     data = dataset(1:ntrain, :);
-    % feature scaling - normalization
-    dataX = data(:, 1:input.nXfeatures);
-    dataY = data(:, input.nXfeatures + input.yFeatureIdx);
-%     dataY = dataX; % for testing graph construction
-%     dataY = dataY(:, input.yFeatureIdx);
-    
-    outlierSet = isoutlier(dataY);
-    normalSet = setdiff(1:length(dataY), outlierSet);
-    dataX = dataX(normalSet, :);
-    dataY = dataY(normalSet, :);
+    %}
+   
+    X = data(:, inputParams('xleft'):end-5);
+    y = data(:, end-4:end); % 5 features
+    y = y(:, inputParams('yOffset'));
 
-    dataX = normc(dataX);
-%     dataY = scale_feature(dataY);
-    dataY = normc(dataY);
+    % Remove outliers & Normalize
+%     [X, y] = remove_outlier(X, y);
+    X = normc(X);
+    y = normc(y);
 end
 
 function scaledData = scale_feature(data)
@@ -27,4 +24,17 @@ function scaledData = scale_feature(data)
     else
         scaledData = (data - min(data)) / range;  
     end
+end
+
+function d = normalize(data)
+    mu = mean(data);
+    sd = std(data);
+    d = (data - mu) ./ sd;
+end
+
+function [data, y] = remove_outlier(data, y)
+    outlierSet = isoutlier(y);
+    normalSet = setdiff(1:length(data), outlierSet);
+    data = data(normalSet, :);
+    y = y(normalSet, :);
 end

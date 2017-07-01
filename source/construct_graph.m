@@ -11,7 +11,7 @@ function lGraph = construct_graph(dataX, config)
     % Calculate Laplacian graph
     [V, D] = construct_laplacian(normA);
     
-    nBands = ceil(config.rBand * lGraph.nVertices);    
+    nBands = ceil(config('rBand') * lGraph.nVertices);    
     lGraph.Vk = V(:, 1:nBands);
     lGraph.Dk = D(1:nBands);  
 end

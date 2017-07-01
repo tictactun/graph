@@ -1,117 +1,95 @@
 function plot_learning_curve(mode)
 
-    % Load setup
-    [input, config] = setup();    
-    % Load csv file into 2 parts: construction and completion
-    [dataX, dataY] = process_data(input);  
-
-    if mode == 1
-        rMaxSamples = 0.6 + [0:7] * 0.05;
-        rAvaiSamples = 0.4;
-        config.alg = 2;
-    else
-        rMaxSamples = 1;
-        rAvaiSamples = 0.6 + [0:7] * 0.05;
-        config.alg = 1;
-    end
-  
-    report.accTest = zeros(length(rAvaiSamples), length(rMaxSamples));
-    report.accTrain = zeros(length(rAvaiSamples), length(rMaxSamples));
-    report.rmseTest = zeros(length(rAvaiSamples), length(rMaxSamples));
-    report.rmseTrain = zeros(length(rAvaiSamples), length(rMaxSamples));
-    report.meTest = zeros(length(rAvaiSamples), length(rMaxSamples));
-    report.meTrain = zeros(length(rAvaiSamples), length(rMaxSamples));
-
+    % Setting
+    [inputParams, config] = setup();   
+    config('alg') = 2;
+    config('rMaxSamples') = 0.8;
+    config('rAvaiSamples') = 0.2;
     kFold = 5;
-    learned = false;
-    selected = false;
-    xCols = [];
-    for r=1:length(rAvaiSamples)
-%         config.rBand = rAvaiSamples(r)
-        fprintf('rAvai = %.2f\n', rAvaiSamples(r));
-        nAvaiSamples = ceil(rAvaiSamples(r) * size(dataY, 1));
+    
+    % Load csv file into 2 parts: construction and completion
+    [dataX, dataY] = process_data(inputParams);  
+
+    % values
+    ranges = containers.Map;
+    ranges('rMaxSamples')   = 0.6 + (0:7) * 0.05;
+    ranges('rAvaiSamples')  = 0.2 + (0:7) * 0.05;
+    ranges('preSigma')      = 0.02 + 0.02 * (0:20); %sigma
+    ranges('nSelectedFeatures') = 1 + 2 * (0:10); % 
+    ranges('gamma')         = 0.01 + 0.3 * (0:40); % gamma
+    ranges('rBand')         = 0.1 + (0:18) * 0.05; % 
+    ranges('kNeighbors')    = 1 + 1 * (0:20); % knn
+    range = ranges(mode);
+    if strcmp('rMaxSamples', mode) 
+        rMaxSamples = ranges('rMaxSamples');
+        range = 1; % 1 round only
+    else
+        rMaxSamples = config('rMaxSamples');
+    end
+
+    % metrics
+    tests = {'accTest', 'accTrain', 'rmseTest', 'rmseTrain', 'meTest', ...
+        'meTrain'};
+    report = containers.Map;
+    for i = 1:length(tests)
+        report(tests{i}) = zeros(length(range), length(rMaxSamples));
+    end
+    
+    for r = 1:length(range)
+        % modify values
+        config(mode) = range(r);   
+        fprintf('rAvai = %.2f\n', range(r));
+        % new available dataset
+        nAvaiSamples = ceil(config('rAvaiSamples') * size(dataY, 1));
         step = ceil((size(dataY, 1) - nAvaiSamples) / kFold) - 1;
-        for k = 0:kFold-1
-%             fprintf('Fold = %d\n', k);
-            avaiSampleSet = step * k + [1:nAvaiSamples];
-            if input.rAvaiSamples > 0 && selected == false
-                selected = true;
-                avaiX = dataX(avaiSampleSet, :);
-                avaiY = dataY(avaiSampleSet, :);
-                % correlation
-                if config.nSelectedFeatures > 0
-                    xCols = select_features(avaiX, avaiY, ...
-                                            config.nSelectedFeatures);
-                end
-                if ~isempty(xCols)
-                    avaiX = avaiX(:, xCols);
-                    dataX = dataX(:, xCols);
-                end
-                % distance learning
-                if config.learningMode > 0 && learned == false
-                   learned = true;
-                   config.disModel = learn_distance(avaiX, avaiY, ...
-                                                config.learningMode);
-                end                
+        % for each fold
+        for k = 1:kFold
+            % pre-game
+            avaiSampleSet = step * (k - 1) + (1:nAvaiSamples);
+            if inputParams('rAvaiSamples') > 0
+                [X, model] = pregame(dataX, dataY, avaiSampleSet, config);
+                dataX = X;
+                config('disModel') = model;
             end
 
-            % construct graph: using selected features - new learned distance
+            % construct graph: using selected features
             myGraph = construct_graph(dataX, config);
 
             % data
-            myGraph.data = dataY; % f includes unseen data, for the testing purpose
+            myGraph.data = dataY; % f includes unseen data
             myGraph.preWSet = avaiSampleSet;
-            myGraph.rMaxSamples = input.rMaxSamples;
-
-            acc = vary_max_sample(myGraph, config, rMaxSamples);
+            myGraph.rMaxSamples = inputParams('rMaxSamples');
             
-            report.accTest(r, :)    = report.accTest(r, :) 	+ acc.accTest;
-            report.accTrain(r, :) 	= report.accTrain(r, :) + acc.accTrain;
-            report.rmseTest(r, :) 	= report.rmseTest(r, :) + acc.rmseTest;
-            report.rmseTrain(r, :)  = report.rmseTrain(r, :) + acc.rmseTrain;
-            report.meTest(r, :)     = report.meTest(r, :)	+ acc.meTest;
-            report.meTrain(r, :)	= report.meTrain(r, :)	+ acc.meTrain;
+            scores = vary_max_sample(myGraph, config, rMaxSamples);
+            % collect score
+            for i = 1:length(tests)
+                t = report(tests{i});
+                t(r, :) = t(r, :) + scores(tests{i})';
+                report(tests{i}) = t;
+            end
         end
-        report.accTest(r, :)    = report.accTest(r, :)  / kFold ;
-        report.accTrain(r, :)   = report.accTrain(r, :) / kFold	;
-        report.rmseTest(r, :) 	= report.rmseTest(r, :) / kFold	;
-        report.rmseTrain(r, :)  = report.rmseTrain(r, :)/ kFold ;
-        report.meTest(r, :)     = report.meTest(r, :)	/ kFold	;
-        report.meTrain(r, :)     = report.meTrain(r, :)	/ kFold	;
+        % Average
+        for i = 1:length(tests)
+            report(tests{i}) = report(tests{i}) / kFold ;
+        end
     end
 
+    % Visualize
     close all
+    plot_it('Norm 2', mode, 'Norm 2', ranges(mode), ...
+        report, {'rmseTrain', 'rmseTest'});
+%     plot_it('Percentage Error distribution', mode, 'Average error', ...
+%         ranges(mode), report, {'meTrain', 'meTest'});    
+end
 
-    if length(rAvaiSamples) == 1
-        rSamples = rMaxSamples;
-    else
-        rSamples = rAvaiSamples;
-    end
-    
+function plot_it(name, labelx, labely, samples, report, terms)
     figure(); hold on
-    title('Acurracy for 15% interval');
-    plot(rSamples, report.accTrain(:), rSamples, report.accTest(:));   
+    title(name);
+    value1 = report(terms{1});
+    value2 = report(terms{2});
+    plot(samples, value1(:), samples, value2(:));  
     legend('Sampled', 'Unsampled', 'Location', 'northeast');
     legend('boxoff');
-    xlabel('Maximum samples');
-    ylabel('Accuracy in %');
-
-    figure(); hold on
-    title('Norm 2');
-    ylabel('Norm 2');
-%     ylabel('RMSE');
-%     title('RMSE');
-    plot(rSamples, report.rmseTrain(:), rSamples, report.rmseTest(:));   
-    legend('Sampled', 'Unsampled', 'Location', 'northeast');
-    legend('boxoff');
-    xlabel('Maximum samples');
-        
-    figure(); hold on
-    title('Percentage Error distribution');
-    plot(rSamples, report.meTrain(:), rSamples, report.meTest(:));
-    xlabel('Available samples');
-    ylabel('Average error in %');
-    legend('Sampled', 'Unsampled', 'Location', 'northeast');
-    legend('boxoff');
-    hold off;
+    xlabel(labelx);
+    ylabel(labely);
 end

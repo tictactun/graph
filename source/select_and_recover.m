@@ -23,7 +23,7 @@ end
 
 % conditional importance => need to invest more 
 function [I, p] = init_leverage(lGraph, config)
-%     I = lGraph.Vk.^2 * config.kernel(lGraph.Dk);
+%     I = lGraph.Vk.^2 * kernel(lGraph.Dk);
     [p, z]= get_prob_dist(lGraph, config);
     I = p .* z;
     if ~isempty(lGraph.preWSet)
@@ -50,7 +50,7 @@ function deltaI = get_recovery_error(wSet, Pw, minIValue, ...
     
     % get recovery error and update scale
     error = norm(y - f(wSet), 2);
-    s = config.alpha * error;
+    s = config('alpha') * error;
 %     acc = 1 - error / (norm(f(wSet), 2) + 0.001);
 %     if acc < 0.01
 %         acc = 0.01;
@@ -62,7 +62,8 @@ function deltaI = get_recovery_error(wSet, Pw, minIValue, ...
     % calculate closeness
     deltaDirac = zeros(lGraph.nVertices, 1);
     deltaDirac(maxId) = 1;
-    Cs = lGraph.Vk *(config.kernel(s * lGraph.Dk).*(lGraph.Vk' * deltaDirac));
+    kernel = config('kernel');
+    Cs = lGraph.Vk *(kernel(s * lGraph.Dk).*(lGraph.Vk' * deltaDirac));
     
     % closeness parameter
     [maxCs, ~] = max(Cs);

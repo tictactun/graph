@@ -3,7 +3,7 @@ function [p, z]= get_prob_dist(lGraph, config)
     [n, k] = size(lGraph.Vk);
     p = zeros(n, 1);
 
-    if 1 == config.samplingMode
+    if 1 == config('samplingMode')
         % Puy random sampling
         for i = 1:n
             delta = zeros(n, 1);
@@ -14,7 +14,8 @@ function [p, z]= get_prob_dist(lGraph, config)
     else
         % wavelet
         for i=1:n   
-             p(i) = config.kernel(lGraph.Dk)' .* lGraph.Vk(i,:) ...
+            kernel = config('kernel');
+            p(i) = kernel(lGraph.Dk)' .* lGraph.Vk(i,:) ...
                                                 * lGraph.Vk(i,:)';            
              % scale = 1?
         end

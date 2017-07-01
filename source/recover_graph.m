@@ -3,7 +3,7 @@
 % Implement both 2 algorithms
 
 function [f, wSet] = recover_graph(lGraph, config)
-    if 1 == config.alg
+    if 1 == config('alg')
         % ECCV: random sampling 
         [p, ~] = get_prob_dist(lGraph, config);
         wSet = lGraph.preWSet;
@@ -20,7 +20,21 @@ function [f, wSet] = recover_graph(lGraph, config)
 %     config.gamma = 0.1;
     
     fHat = recover_from_samples(y, M, Pw, lGraph, config);
-    f = lGraph.Vk * fHat;   
+    f = lGraph.Vk * fHat;  
+    
+    %{
+    dataHat = lGraph.Vk' * lGraph.data;    
+    samples = 1:length(fHat);    
+    
+    close all;
+    figure(); hold on;
+    title('Fourier transform');
+    plot(samples, dataHat, samples, fHat);   
+    legend('Ground truth', 'Recovered Signal', 'Location', 'northeast');
+    legend('boxoff');
+    xlabel('Frequency');
+    ylabel('Value');
+    %}
 end 
 
 

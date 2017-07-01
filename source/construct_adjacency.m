@@ -7,7 +7,7 @@ function A = construct_adjacency(data, config)
     for i = 1:nVertices
         for j = (i + 1): nVertices
             s(i, j) = get_similarity(data(i, :), data(j, :), ...
-                config.preSigma, config);
+                config('preSigma'), config);
 %             if s(i, j) < threshold
 %                 s(i, j) = 0;
 %             end
@@ -17,11 +17,11 @@ function A = construct_adjacency(data, config)
     end
     
     % sparsification: mutual kNN or b-matching or thresholding
-    k = config.kNeighbors;
+    k = config('kNeighbors');
     [p, dk] = get_kNN(k, s);
     
     % re-weighting: Gaussian or LLS
-    sig = config.preSigma;
+    sig = config('preSigma');
 %     sig = dk/3; % ref from Tony
     
     a = zeros(nVertices, nVertices);
@@ -49,16 +49,18 @@ end
 function sim = get_similarity(x1, x2, sigma, config)
     % should use ML to learn this distance
     % current: Euclidean distance
-    if config.learningMode == 2
-        [d, ~] = predict(config.disModel, abs(x1 - x2));     
-    elseif config.learningMode == 1
-        [c1, ~] = predict(config.disModel, x1);
-        [c2, ~] = predict(config.disModel, x2);
+    if config('learningMode') == 2
+        [d, ~] = predict(config('disModel'), abs(x1 - x2));     
+    elseif config('learningMode') == 1
+        [c1, ~] = predict(config('disModel'), x1);
+        [c2, ~] = predict(config('disModel'), x2);
         d = norm(c1 - c2, 2);
     else
+%         d = sum((x1 - x2) .^ 2 .* config.cov')^2;
         d = norm(x1 - x2, 2); 
     end
     sim = rbf(d, sigma);
+%     sim = d;
 end
 
 
