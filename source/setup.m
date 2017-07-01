@@ -8,7 +8,7 @@ function [inputParams, config] = setup()
     inputParams('rtrain')   = 1; % train proportion
     inputParams('xleft')    = 1;
 %     inputParams('xright')   = 65;
-    inputParams('yOffset')  = 5; % from 1 to 5, index of the CSF feature
+    inputParams('yOffset')  = 1; % from 1 to 5, index of the CSF feature
     inputParams('rAvaiSamples') = 0.2; % percentage of available samples
     inputParams('rMaxSamples')  = 0.6; % maximum (including available ones)
     

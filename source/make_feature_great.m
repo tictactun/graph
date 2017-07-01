@@ -10,7 +10,7 @@ function [xCols, degree, cov10] = make_feature_great(data, y, nSelected)
     coValues(isnan(coValues)) = 0;
     xCols = 1:nFeatures;
     xCols = xCols(abs(coValues) > 0.1);
-    xCols(end + 1) = 9;
+%     xCols(end + 1) = 9;
 %     xCols(end + 1) = 22;
     cov10 = coValues(xCols);
     
@@ -42,7 +42,7 @@ function [xCols, degree, cov10] = make_feature_great(data, y, nSelected)
     degree = degree(cols);
     cov10 = cov10(cols);
 
-    for i = 1:length(xCols)
-        fprintf('%f %d \n', coValues(xCols(i)), xCols(i));
-    end
+%     for i = 1:length(xCols)
+%         fprintf('%f %d \n', coValues(xCols(i)), xCols(i));
+%     end
 end
