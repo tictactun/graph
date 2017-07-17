@@ -12,7 +12,7 @@ function report = vary_max_sample(lGraph, config, maxSamples)
         [reData, wSet] = recover_graph(lGraph, config);
         % Evaluation
         err = evaluate_recovery(wSet, ...
-                        lGraph.data, reData, config('epsilon'));
+                        lGraph.data, reData, config);
         for k = 1:length(tests)
             t = report(tests{k});
             t(i) = err(tests{k});

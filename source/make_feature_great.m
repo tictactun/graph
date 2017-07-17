@@ -4,8 +4,8 @@ function [xCols, degree, cov10] = make_feature_great(data, y, nSelected)
     
     % First filter by correlation 0.1
     coValues = zeros(nFeatures, 1);
-    for i =1:nFeatures 
-        coValues(i) = corr(data(:, i), y);
+    for i = 1:nFeatures 
+        coValues(i) = mean(corr(data(:, i), y));
     end
     coValues(isnan(coValues)) = 0;
     xCols = 1:nFeatures;
@@ -25,8 +25,11 @@ function [xCols, degree, cov10] = make_feature_great(data, y, nSelected)
         e = 100;
         while e >= epsilon
             d = d + 1;
-            cov = corr(data(:, col) .^ d, y);
+            cov = mean(corr(data(:, col) .^ d, y));
             e = abs(cov) - abs(bestCov);
+            if cov ~= cov
+                break;
+            end
             bestCov = cov;
         end
         degree(i) = d - 1;
@@ -36,13 +39,13 @@ function [xCols, degree, cov10] = make_feature_great(data, y, nSelected)
     % Final filter by correlation greater than 0.2
     [~, dInds] = sort(abs(cov10), 'descend');
     cols = dInds(1:min(nSelected, n));
-    cols = cols(abs(cov10(cols)) > 0.2);
-%     
+%     cols = cols(abs(cov10(cols)) > 0.2);
+    
     xCols = xCols(cols);
     degree = degree(cols);
     cov10 = cov10(cols);
 
 %     for i = 1:length(xCols)
-%         fprintf('%f %d \n', coValues(xCols(i)), xCols(i));
+%         fprintf('%f %d \n', cov10(i), xCols(i));
 %     end
 end

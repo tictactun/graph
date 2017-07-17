@@ -8,12 +8,14 @@ function [wSet, Pw] = select_and_recover(lGraph, config)
     maxIter = ceil(lGraph.rMaxSamples * lGraph.nVertices) - length(wSet);
     for j=1:maxIter
         % Select step: delta(v|pi) = I(v) (definition)
-        [~, maxId] = max(I);
+        [maxValue, maxId] = max(I);
+        if maxValue == 0
+            break;
+        end
         [minIValue, ~] = min(I(I > 0));
-
         wSet(end + 1) = maxId; 
         deltaI = get_recovery_error(wSet, p(wSet), minIValue, maxId, ...
-                        lGraph, config);
+            lGraph, config);
         I = I - deltaI;
         I(wSet) = 0;
     end
@@ -70,5 +72,9 @@ function deltaI = get_recovery_error(wSet, Pw, minIValue, ...
     eta = minIValue / maxCs; % ensure I(j +1) (id) = 0
     
     % reduction amount
-    deltaI = eta * Cs;
+    try
+        deltaI = eta * Cs;
+    catch 
+        0;
+    end
 end

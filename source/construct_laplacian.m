@@ -1,19 +1,20 @@
 % construct the laplacian matrix from an adjacency matrix
-function [sortedEVectors, sortedEValues] = construct_laplacian(A)
+function [sortedV, sortedD] = construct_laplacian(A)
     % Diagonal matrix
     digValues = diag(sum(A, 1)); % sum of weights
-    D = full(digValues);
+    diagMatrix = full(digValues);
     % Laplacian matrix
-    L = D - A;
+    L = diagMatrix - A;
     L = full(L);
     
     % normalized 
-%     L = D^(-0.5) * L * D^(-0.5);
+%     L = diagMatrix^(-0.5) * L * diagMatrix^(-0.5);
     
     % Eigenvalues & eigenvectors
-    [eVectorsMatrix, eValuesMatrix] = eig(L);
+    [V, D] = eig(L);
+    
     % sort eigen values and vectors
-    eValues = diag(eValuesMatrix);
-    [sortedEValues, idx] = sort(eValues, 'ascend');
-    sortedEVectors = eVectorsMatrix(:, idx);
+    eValues = diag(D);
+    [sortedD, idx] = sort(eValues, 'descend');
+    sortedV = V(:, idx);
 end

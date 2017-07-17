@@ -13,7 +13,11 @@ function main
     % Load csv file into 2 parts: construction and completion
     [dataX, dataY] = process_data(inputParams);  
     
-    % Pre-game
+    dataY = dataY(:, inputParams('yOffset'));
+%     load ../hao/Xs.mat Xsource
+%     dataX = Xsource;
+%     dataX = normc(dataX);
+    % Pre-game - it should be repeated everytime new sample is coming
     nAvaiSamples = inputParams('rAvaiSamples') * size(dataY, 1);
     avaiSampleSet = 1:nAvaiSamples; % can be updated
     if inputParams('rAvaiSamples') > 0
@@ -21,11 +25,12 @@ function main
         dataX = X;
         config('disModel') = model;
     end
-    
+
     % construct graph: using selected features - new learned distance
     myGraph = construct_graph(dataX, config);
     
     % data
+    
     myGraph.data = dataY; % f includes unseen data, for the testing purpose
     myGraph.preWSet = avaiSampleSet;
     myGraph.rMaxSamples = inputParams('rMaxSamples');
@@ -33,12 +38,18 @@ function main
     % Recover
     [reData, wSet] = recover_graph(myGraph, config);
     
+    fprintf('\t------Evaluation------\n');
     % Evaluation
-    err = evaluate_recovery(wSet, myGraph.data, reData, config('epsilon'));
-            
-    % recover graph
+    err = evaluate_recovery(wSet, dataY, reData, config);           
+    fprintf('Graph completion:\n');
     print_result(err);    
     
+    % baseline result
+%     w = 1: (inputParams('rMaxSamples') * size(dataY, 1));
+%     err2 = get_baseline(dataX, dataY, wSet, config);
+%     fprintf('Linear Regression:\n');
+%     print_result(err2); 
+
     % visualize
-    plot_scatter(myGraph.data, reData, wSet);
+%     plot_scatter(myGraph.data, reData, wSet);
 end

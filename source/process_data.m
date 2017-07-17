@@ -7,14 +7,16 @@ function [X, y] = process_data(inputParams)
     data = dataset(1:ntrain, :);
     %}
    
-    X = data(:, inputParams('xleft'):end-5);
+    X = data(:, inputParams('xleft'): inputParams('xright'));
     y = data(:, end-4:end); % 5 features
-    y = y(:, inputParams('yOffset'));
+%     y = y(:, inputParams('yOffset'));
 
     % Remove outliers & Normalize
 %     [X, y] = remove_outlier(X, y);
-    X = normc(X);
-    y = normc(y);
+    for i =1:size(X, 2)
+        X(:, i) = scale_feature(X(:, i));
+    end
+%     y = normc(y);
 end
 
 function scaledData = scale_feature(data)

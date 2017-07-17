@@ -19,8 +19,19 @@ function [f, wSet] = recover_graph(lGraph, config)
     % update for the last recovery
 %     config.gamma = 0.1;
     
-    fHat = recover_from_samples(y, M, Pw, lGraph, config);
+    try 
+        fHat = recover_from_samples(y, M, Pw, lGraph, config);
+    catch e
+        fHat = zeros(size(lGraph.Vk, 2), 1);
+        fprintf(e);
+    end
+        
     f = lGraph.Vk * fHat;  
+    
+    % post-processing
+    threshold = config('threshold');
+    f(f > 2 * threshold) = threshold - 1; % as negative
+    f(f < 0) = threshold - 1;
     
     %{
     dataHat = lGraph.Vk' * lGraph.data;    
