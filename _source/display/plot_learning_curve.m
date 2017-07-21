@@ -1,13 +1,12 @@
-function plot_learning_curve(param)
+ function plot_learning_curve(param)
     % Setting
-    [inputParams, config] = init();     
-    rAvai = inputParams('rAvaiSamples');
-    rMax = inputParams('rMaxSamples');
-    nVertices = size(originX, 1);
-    kFolds = 5;
-    
+    [inputParams, configs] = init();     
     % Load csv file into 2 parts: construction and completion
     [dataX, dataY] = process_data(inputParams);  
+    
+    nVertices = size(dataX, 1);
+    kFolds = 2;
+    
     % values
     ranges = containers.Map;
     ranges('rMaxSamples')   = 0.6 + (0:7) * 0.05;
@@ -20,89 +19,78 @@ function plot_learning_curve(param)
     ranges('sim')           = 10 * (1:9);
     ranges('simKernel')     = 1:6;
     interval = ranges(param);
+
+    % metrics
+    %{
     if strcmp('rMaxSamples', param) 
         rMaxSamples = ranges('rMaxSamples');
         interval = 1; % 1 round only
     else
-        rMaxSamples = config('rMaxSamples');
+        rMaxSamples = configs('rMaxSamples');
     end
-
-    % metrics
     tests = {'accTest', 'accTrain', 'rmseTest', 'rmseTrain', 'meTest', ...
         'meTrain'};
     report = containers.Map;
     for i = 1:length(tests)
         report(tests{i}) = zeros(length(interval), length(rMaxSamples));
     end
-    
+    %}
+    metrics = zeros(6, length(interval));
     count = zeros(length(interval), 1);
-    for r = 1:length(interval)
-        try 
-            % modify values
-            config(param) = interval(r);   
-            fprintf('%s  = %.2f\n', param, interval(r));
-            % new available dataset
-            nAvaiSamples = ceil(rAvai * nVertices);
-            step = ceil((nVertices - nAvaiSamples) / kFolds) - 1;
-            % for each fold
-            for k = 1:kFolds
-                % pre-game
-                avaiSampleSet = step * (k - 1) + (1:nAvaiSamples);
-                mdl = false;
-                if rAvai > 0
-                    [X, mdl] = pregame(dataX, dataY, avaiSampleSet, config);
-                    dataX = X;                    
-                end
-
-                % construct graph: using selected features
-                myGraph = construct_graph(dataX, config, mdl);
-                myGraph.data = dataY; % f includes unseen data
-                myGraph.preWSet = avaiSampleSet;
-                myGraph.rMaxSamples = rMax;
-
-                scores = vary_max_sample(myGraph, config, rMaxSamples);
-                % collect score
-                for i = 1:length(tests)
-                    t = report(tests{i});
-                    t(r, :) = t(r, :) + scores(tests{i})';
-                    report(tests{i}) = t;
-                end
-                count(r) = count(r) + 1;
-            end
-        catch
-            fprintf('Error\n');
-        end
-    end
-    % Average
-    for i = 1:length(tests)
-        report(tests{i}) = report(tests{i}) / kFolds ;
-    end
     
-    value2 = report('meTest');
-    for i = 1:length(interval)
-        fprintf('%.4f\n', value2(i));
+    for r = 1:length(interval)
+        fprintf('%s  = %.2f\n', param, interval(r));
+        % clone
+        config = configs;
+        inputPars = inputParams;
+        if strcmp('rMaxSamples', param) ||strcmp('rAvaiSamples', param)
+            inputPars(param) = interval(r);
+        else            
+            config(param) = interval(r);   
+        end
+        
+        % new available dataset
+        rAvai = inputParams('rAvaiSamples');
+        nAvaiSamples = ceil(rAvai * nVertices);
+        step = ceil((nVertices - nAvaiSamples) / kFolds) - 1;
+        
+        for k = 1:kFolds
+            avaiSampleSet = step * (k - 1) + (1:nAvaiSamples);
+            try
+                [reData, wSet] = recover(dataX, dataY, avaiSampleSet, ...
+                    inputPars, config);
+            catch e
+                count(r) = count(r) + 1;
+                continue;
+            end
+            % Evaluation
+            err_graph = evaluate_recovery(wSet, dataY, reData, config);
+            metrics(:, r) = metrics(:, r) + err_graph;
+        end        % Average
+        iters = kFolds - count(r);
+        metrics(:, r) = metrics(:, r) ./ iters;
     end
+
+    fprintf("No of error cases: \n");
     for i = 1:length(interval)
         fprintf('%d: %d\n', i, count(i));
     end
     
     % Visualize
     close all
+    plot_it('Percentage Error distribution', param, 'Average error', ...
+        ranges(param), metrics(1, :), metrics(2, :)); 
 %     plot_it('Precision', mode, 'Precision', ranges(mode), ...
 %         report, {'accTrain', 'accTest'});
-    plot_it('Percentage Error distribution', param, 'Average error', ...
-        ranges(param), report, {'meTrain', 'meTest'}); 
 %     plot_it('Norm', mode, 'Norm', ranges(mode), ...
 %         report, {'rmseTrain', 'rmseTest'});
 end
 
-function plot_it(name, labelx, labely, samples, report, terms)
+function plot_it(name, labelx, labely, samples, value1, value2)
     figure(); hold on
     title(name);
-    value1 = report(terms{1});
-    value2 = report(terms{2});
-    plot(samples, value1(:), samples, value2(:));  
-    legend('Observed', 'Unobserved', 'Location', 'northeast');
+    plot(samples, value1, samples, value2);  
+    legend('Observed', 'UnObserved', 'Location', 'northeast');
     legend('boxoff');
     xlabel(labelx);
     ylabel(labely);

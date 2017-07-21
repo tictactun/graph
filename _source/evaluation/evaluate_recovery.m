@@ -10,21 +10,19 @@ function err = evaluate_recovery(wSet, trueData, predData, config)
     tUnSampled =  trueData(notW, :);
     pUnSampled = predData(notW, :);
 
-    % For precision
-    err = containers.Map;
-    err('accTest') = get_accuracy(tUnSampled, pUnSampled, config); 
-    err('accTrain') = get_accuracy(tSampled, pSampled, config);
-    
+    err = zeros(6, 1);
     % mean error %
     eDist = 100 * abs((trueData - predData) ./ (trueData));
-    err('meTest')   = mean(eDist(notW));
-    err('meTrain')  = mean(eDist(wSet));
+    err(1)  = mean(eDist(notW));
+    err(2)  = mean(eDist(wSet));
     
+    % For precision
+    err(3) = get_accuracy(tUnSampled, pUnSampled, config); 
+    err(4) = get_accuracy(tSampled, pSampled, config);
+        
     % For RMSE
-    err('rmseTest') = get_rmse(tUnSampled, pUnSampled);
-    err('rmseTrain') = get_rmse(tSampled, pSampled);
-%     err('rmseTest') = mean(eDist);
-%     err('rmseTrain') = 0;
+    err(5) = get_rmse(tUnSampled, pUnSampled);
+    err(6) = get_rmse(tSampled, pSampled);
 end
 
 function error = get_rmse(y, p)
@@ -32,10 +30,6 @@ function error = get_rmse(y, p)
 end
 
 function precision = get_accuracy(y, p, config)
-    %{
-    correct  = sum(abs(y - p) <= abs(e * y));
-    accuracy = 100 * (correct / length(y));
-    %}
     t = config('threshold');
     % measure
     nTruePos = sum(y >= t);

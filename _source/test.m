@@ -14,14 +14,14 @@ function test(dataX, dataY, inputParams, config)
     
     % Evaluation
     fprintf('\t------Evaluation------\n');
-    err = evaluate_recovery(wSet, dataY, reData, config);           
+    err1 = evaluate_recovery(wSet, dataY, reData, config);           
     fprintf('Graph completion:\n');
-    print_result(err);    
+    print_result(err1);    
     
     % baseline result - w or wSet
     w = 1: ceil(rMax * nVertices);
     err2 = get_baseline(dataX, dataY, w, config);
-    fprintf('Linear Regression:\n');
+    fprintf('Lasso:\n');
     print_result(err2); 
 
     % visualize

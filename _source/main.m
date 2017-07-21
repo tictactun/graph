@@ -6,15 +6,21 @@
     Description: graph completion 
 %}
 
+%{
+    @param
+        runMode int 0 for single shot, 1 for cross validation
+                    default value is 0
+    @return 
+%}
 function main(runMode)
     warning off;
     if nargin < 1
         runMode = 0;
     end
     
-    [inputParams, config] = init();    
+    [inputPars, configs] = init();    
     % Load csv file into 2 parts: construction and completion
-    [dataX, dataY] = process_data(inputParams);     
+    [dataX, dataY] = process_data(inputPars);     
     %{
     dataY = dataY(:, inputParams('yOffset'));
     load ../mmd/Xs.mat Xsource
@@ -23,9 +29,10 @@ function main(runMode)
     %}
     
     if 0 == runMode
-        recover(dataX, dataY, inputParams, config);
+        test(dataX, dataY, inputPars, configs);
     else
-        kFold = 5;
-        cross_validation(kFold, dataX, dataY, inputParams, config);
+        kFolds = 5; % number of folds 
+        nIters = 100; % number of iters
+        cross_validation(kFolds, nIters, dataX, dataY, inputPars, configs);
     end
 end
