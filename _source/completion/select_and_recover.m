@@ -52,14 +52,14 @@ function deltaI = get_recovery_error(wSet, Pw, minIValue, ...
     
     % get recovery error and update scale
     error = norm(y - f(wSet), 2);
-    s = config('alpha') * error;
-%     acc = 1 - error / (norm(f(wSet), 2) + 0.001);
-%     if acc < 0.01
-%         acc = 0.01;
-%     elseif acc > 1.5
-%         acc = 1.5;
-%     end    
-%     s = acc / 0.05; % change kernel
+%     s = config('alpha') * error;
+    acc = 1 - error / (norm(f(wSet), 2) + 0.001);
+    if acc < 0.01
+        acc = 0.01;
+    elseif acc > 1.5
+        acc = 1.5;
+    end    
+    s = acc / 0.05; % change kernel
     
     % calculate closeness
     deltaDirac = zeros(lGraph.nVertices, 1);
@@ -72,9 +72,7 @@ function deltaI = get_recovery_error(wSet, Pw, minIValue, ...
     eta = minIValue / maxCs; % ensure I(j +1) (id) = 0
     
     % reduction amount
-    try
-        deltaI = eta * Cs;
-    catch 
-        0;
-    end
+    
+    deltaI = eta * Cs;
+    
 end

@@ -8,9 +8,17 @@ function test(dataX, dataY, inputParams, config)
     avaiSampleSet = 1:nAvaiSamples;
 %     avaiSampleSet = randi(nVertices, nAvaiSamples, 1);
 
+%     u = mean(dataY);
+%     sigma = std(dataY);
+%      
+%     dataY = (dataY - u)./sigma;
+    
     % Recover
     [reData, wSet] = recover(dataX, dataY, avaiSampleSet, ...
             inputParams, config);
+    
+%     dataY = dataY .* sigma + u;
+%     reData = reData .* sigma + u;
     
     % Evaluation
     fprintf('\t------Evaluation------\n');
@@ -20,10 +28,11 @@ function test(dataX, dataY, inputParams, config)
     
     % baseline result - w or wSet
     w = 1: ceil(rMax * nVertices);
-    err2 = get_baseline(dataX, dataY, w, config);
+    err2 = get_baseline(dataX, dataY, wSet, config);
     fprintf('Lasso:\n');
     print_result(err2); 
 
     % visualize
-%     plot_scatter(myGraph.data, reData, wSet);
+%     notW = setdiff(1:nVertices, wSet);
+%     plot_scatter(dataY, reData, notW);
 end

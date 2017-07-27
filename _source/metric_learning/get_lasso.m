@@ -4,6 +4,7 @@ function mdl = get_lasso(Xtrain, ytrain)
     for i = 1:size(ytrain, 2)
         y = ytrain(:, i);
         [B, FitInfo] = lasso(Xtrain, y);
+%         B = ridge(ytrain, Xtrain, );
         [~, idx] = min(FitInfo.MSE);
         mdl.b(:, i) = B(:, idx);
         mdl.b0(:, i) = FitInfo.Intercept(idx);

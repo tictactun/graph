@@ -1,11 +1,11 @@
-function lGraph = construct_graph(dataX, config, mdl)   
+function lGraph = construct_graph(dataX, avaiSampleSet, config, mdl)   
     lGraph.nVertices = size(dataX, 1);
     
     % construct graph based on the construction data    
     if config('ensembleMode')
         A = ensemble_graph(dataX, config, mdl);
     else
-        A = construct_adjacency(dataX, config, mdl);
+        A = construct_adjacency(dataX, avaiSampleSet, config, mdl);
     end
     
     % normalize graph

@@ -21,6 +21,14 @@ function main(runMode)
     [inputPars, configs] = init();    
     % Load csv file into 2 parts: construction and completion
     [dataX, dataY] = process_data(inputPars);     
+    
+%     [dataY, minY, rangeY] = scale_feature(dataY);
+%     configs('threshold') = (configs('threshold') - minY) / rangeY;
+    
+%     [dataY, inds] = sort(dataY, 'ascend');
+%     dataX = dataX(inds, :);  
+    % transform to keep montonically increasing order
+    
     %{
     dataY = dataY(:, inputParams('yOffset'));
     load ../mmd/Xs.mat Xsource
@@ -32,7 +40,7 @@ function main(runMode)
         test(dataX, dataY, inputPars, configs);
     else
         kFolds = 5; % number of folds 
-        nIters = 100; % number of iters
+        nIters = 1000; % number of iters
         cross_validation(kFolds, nIters, dataX, dataY, inputPars, configs);
     end
 end

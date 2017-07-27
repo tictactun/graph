@@ -29,9 +29,9 @@ function [f, wSet] = recover_graph(lGraph, config)
     f = lGraph.Vk * fHat;  
     
     % post-processing
-    threshold = config('threshold');
-    f(f > 2 * threshold) = threshold - 1; % as negative
-    f(f < 0) = threshold - 1;
+%     threshold = config('threshold');
+%     f(f > 2 * threshold) = threshold - 1; % as negative
+%     f(f < 0) = threshold - 1;
     
     %{
     dataHat = lGraph.Vk' * lGraph.data;    

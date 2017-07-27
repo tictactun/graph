@@ -13,7 +13,7 @@ function A = learn_metric(X, y)
     m = length(y);
 %     C = zeros(num_constraints, 4);
     C = [];
-    load Atrue.mat A
+    load mat/A.mat A
     A = A(1:m, 1:m);
     nNeg = 2 * sum(A(:) == 1);
     for i = 1:m

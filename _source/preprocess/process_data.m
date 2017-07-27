@@ -14,19 +14,11 @@ function [X, y] = process_data(inputParams)
 
     % Remove outliers & Normalize
     [X, y] = remove_outlier(X, y);
+%     X = normc(X);
     for i =1:size(X, 2)
-        X(:, i) = scale_feature(X(:, i));
+        [X(:, i), ~, ~] = scale_feature(X(:, i));
     end
 %     y = normc(y);
-end
-
-function scaledData = scale_feature(data)
-    range = max(data) - min(data);
-    if range == 0
-        scaledData = ones(size(data, 1), 1);
-    else
-        scaledData = (data - min(data)) / range;  
-    end
 end
 
 function d = normalize(data)
@@ -36,8 +28,9 @@ function d = normalize(data)
 end
 
 function [data, y] = remove_outlier(data, y)
-    outlierSet = isoutlier(y);
-    normalSet = setdiff(1:size(data, 1), outlierSet);
-    data = data(normalSet, :);
-    y = y(normalSet, :);
+%     outlierSet = isoutlier(y);
+    outlierSet = y > 1700;
+%     normalSet = setdiff(1:size(data, 1), outlierSet);
+    data = data(~outlierSet, :);
+    y = y(~outlierSet, :);
 end

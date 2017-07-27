@@ -13,35 +13,29 @@ function err = evaluate_recovery(wSet, trueData, predData, config)
     err = zeros(6, 1);
     % mean error %
     eDist = 100 * abs((trueData - predData) ./ (trueData));
-    err(1)  = mean(eDist(notW));
-    err(2)  = mean(eDist(wSet));
+%     err(1)  = mean(eDist(notW));
+%     err(2)  = mean(eDist(wSet));
+    
+    e = config('threshold') * config('epsilon');
+    err(1) = get_error(tUnSampled, pUnSampled, e);
+    err(2) = get_error(tSampled, pSampled, e);
     
     % For precision
-    err(3) = get_accuracy(tUnSampled, pUnSampled, config); 
-    err(4) = get_accuracy(tSampled, pSampled, config);
+    t = config('threshold');
+    err(3) = get_accuracy(tUnSampled, pUnSampled, t, config('errorMode')); 
+    err(4) = get_accuracy(tSampled, pSampled, t, config('errorMode'));
         
     % For RMSE
     err(5) = get_rmse(tUnSampled, pUnSampled);
     err(6) = get_rmse(tSampled, pSampled);
 end
 
+% this makes more sense
+function err = get_error(y, p, e)
+    err = sum(abs(y - p) <= e);
+    err = 100 * (err / size(y, 1));
+end
+
 function error = get_rmse(y, p)
     error = norm(y - p, 2);   
-end
-
-function precision = get_accuracy(y, p, config)
-    t = config('threshold');
-    % measure
-    nTruePos = sum(y >= t);
-    nPredPos = sum(p >= t);
-    tp = sum((y >= t) .* (p >=t));
-    tn = sum((y < t) .* (p < t));
-    precision = tp / nPredPos * 100;
-    recall = tp / nTruePos * 100;
-    accuracy = (tp + tn) / length(y) * 100;
-end
-
-function accuracy = get_error(y, p)
-    err = sum(abs((y - p) ./ y));
-    accuracy = 100 * (err / length(y));
 end

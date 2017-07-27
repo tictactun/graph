@@ -4,8 +4,10 @@ function sim = get_similarity(x1, x2, sigma, config, mdl)
     learnmode = config('learningMode');
     if learnmode > 0
         if  learnmode == 1
-            x1 = x1 * mdl;
-            x2 = x2 * mdl;
+%             x1 = x1 * mdl;
+%             x2 = x2 * mdl;
+            x1 = predict(mdl, x1);
+            x2 = predict(mdl, x2);
             d = norm(x1 - x2, 2);
         elseif learnmode == 2
             x = abs(x1 - x2);

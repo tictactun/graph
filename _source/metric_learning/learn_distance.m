@@ -1,9 +1,7 @@
 
 % Machine learning approaches
 function mdl = learn_distance(X, y, mode)
-%     X = randn(100,5);
-%     y = X*[1;0;3;0;-1]+randn(100,1);
-    y = normc(y) / size(y, 2);
+%     y = normc(y) / size(y, 2);
     if mode == 1
         mdl = train1(X, y);
     elseif mode == 2
@@ -12,25 +10,24 @@ function mdl = learn_distance(X, y, mode)
         mdl = get_lasso(X, y);
     elseif mode == 4
         mdl = learn_metric(X, y);
+    elseif mode == 5
+        mdl = train5(X, y);
     end
 end
 
 % we should do {feature scaling; cross valuation}
 
 % approach 1: learn directly CSF
-function model = train1(X, y)
+function mdl = train1(X, y)
     % regularizer: lasson to sparsify
 %     model = fitlm(X, y);
-    model = mvregress(X, y);
+%     mdl = mvregress(X, y);
+    mdl = fitrtree(X, y);
 end
 
-function sim = rbf(d, sigma) 
-    sim = exp(-d .^2 ./(2 * sigma^2));
-end
 % approach 2: learn CSF pair similarity
-function model = train2(X, y)
+function mdl = train2(X, y)
     % generate difference dataset
-    sigma = 0.1;
     m = size(y, 1); 
     s = nchoosek(m, 2);
     Xnew = zeros(s, size(X,2));
@@ -45,5 +42,32 @@ function model = train2(X, y)
     end
 %     model = fitlm(Xnew, ynew);
 %     model = mvregress(Xnew, ynew);
-    model = get_lasso(Xnew, ynew);
+    mdl = get_lasso(Xnew, ynew);
 end
+
+function mdl = train5(X, y)
+    % generate difference dataset
+    m = size(y, 1); 
+    load mat/A.mat A
+    A = A(1:m, 1:m);
+    
+    Xnew = [];
+    ynew = [];
+    
+    neg = 0;
+    pos = sum(A(:) == 1) / 2;
+    
+    for i = 1:m-1
+        for j = i+1:m 
+            if A(i, j) == 1 || neg < pos * 2
+                if A(i, j) == 0
+                    neg = neg + 1;
+                end
+                Xnew(end + 1, :) = X(i, :) - X(j, :);
+                ynew(end + 1, 1) = A(i, j);
+            end
+        end
+    end
+    mdl = fitcnb(Xnew, ynew);
+end
+
