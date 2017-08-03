@@ -1,12 +1,6 @@
 function [X, y] = process_data(inputParams)
    
     data = csvread(inputParams('filename'), 1, 0);    
-    %{
-    % train dataset
-    ntrain = ceil(input.rtrain * input.dataSize);
-    data = dataset(1:ntrain, :);
-    %}
-   
 %     X = data(:, inputParams('xleft'): inputParams('xright'));
     X = data(:, 1:end-5);
     y = data(:, end-4:end); % 5 features
@@ -28,8 +22,8 @@ function d = normalize(data)
 end
 
 function [data, y] = remove_outlier(data, y)
-%     outlierSet = isoutlier(y);
-    outlierSet = y > 1700;
+    outlierSet = isoutlier(y);
+%     outlierSet = y > 1700;
 %     normalSet = setdiff(1:size(data, 1), outlierSet);
     data = data(~outlierSet, :);
     y = y(~outlierSet, :);

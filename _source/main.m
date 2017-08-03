@@ -2,7 +2,7 @@
     Project: Graph completion
     File: main
     Author: Tuan Dinh
-    From the orignial verison of WonHwa 
+    Revised from the orignial verison of WonHwa Kim
     Description: graph completion 
 %}
 
@@ -37,10 +37,19 @@ function main(runMode)
     %}
     
     if 0 == runMode
-        test(dataX, dataY, inputPars, configs);
+        [metric_graph, metric_lasso] = test(dataX, dataY, ...
+            inputPars, configs);
     else
         kFolds = 5; % number of folds 
-        nIters = 1000; % number of iters
-        cross_validation(kFolds, nIters, dataX, dataY, inputPars, configs);
+        nIters = 100; % number of iters
+        [metric_graph, metric_lasso] = cross_validation(kFolds, ...
+            nIters, dataX, dataY, inputPars, configs, 2);
     end
+    % Display        
+    fprintf('\t------Evaluation------\n');           
+    fprintf('Graph completion:\n');
+    print_result(metric_graph);  
+    % Baseline result    
+    fprintf('Linear Regression:\n');
+    print_result(metric_lasso);
 end

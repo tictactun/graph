@@ -20,9 +20,9 @@ end
 % approach 1: learn directly CSF
 function mdl = train1(X, y)
     % regularizer: lasson to sparsify
-%     model = fitlm(X, y);
+    mdl = fitlm(X, y);
 %     mdl = mvregress(X, y);
-    mdl = fitrtree(X, y);
+%     mdl = fitrtree(X, y);
 end
 
 % approach 2: learn CSF pair similarity

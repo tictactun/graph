@@ -1,4 +1,5 @@
-function cross_validation(kFolds, nIters, oriX, oriY, inputParams, config)
+function [metric_graph, metric_lasso] =  cross_validation(kFolds, ...
+                        nIters, oriX, oriY, inputParams, config, eMode)
     % Params
     rAvai = inputParams('rAvaiSamples');
     rMax = inputParams('rMaxSamples');
@@ -27,25 +28,31 @@ function cross_validation(kFolds, nIters, oriX, oriY, inputParams, config)
                 continue;
             end
             % Evaluation
-            % Graph
-            err_graph = evaluate_recovery(wSet, dataY, reData, config);
-            metric_graph = metric_graph + err_graph;
-            % Lasso
-            w = 1:ceil(rMax * nVertices);
-            err_lasso = get_baseline(dataX, dataY, w, config);      
-            metric_lasso = metric_lasso + err_lasso;
+            
+            if eMode ~= 2
+                % Graph
+                err_graph = evaluate_recovery(wSet, dataY, reData, config);
+                if err_graph(5) == -1
+                    continue;
+                else
+                    metric_graph = metric_graph + err_graph;
+                end
+            end
+            if eMode ~= 1
+                % Lasso            
+                w = 1:ceil(rMax * nVertices);
+                err_lasso = get_baseline(dataX, dataY, w, config);      
+                metric_lasso = metric_lasso + err_lasso;
+            end
         end
     end
     % Average
     iters = (nIters * kFolds - errCount);
-    metric_graph = metric_graph ./ iters;
-    metric_lasso = metric_lasso ./ iters;
-    % Display        
-    fprintf('\t------Evaluation------\n');   
-    fprintf('No of exceptions: %d\n', errCount); 
-    fprintf('Graph completion:\n');
-    print_result(metric_graph);  
-    % Baseline result    
-    fprintf('Linear Regression:\n');
-    print_result(metric_lasso); 
+    if eMode ~= 2
+        metric_graph = metric_graph ./ iters;
+    end
+    if eMode ~= 1
+        metric_lasso = metric_lasso ./ iters;
+    end
+%     fprintf('No of exceptions: %d\n', errCount); 
 end

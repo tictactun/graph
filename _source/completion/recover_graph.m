@@ -32,7 +32,7 @@ function [f, wSet] = recover_graph(lGraph, config)
 %     threshold = config('threshold');
 %     f(f > 2 * threshold) = threshold - 1; % as negative
 %     f(f < 0) = threshold - 1;
-    
+%     
     %{
     dataHat = lGraph.Vk' * lGraph.data;    
     samples = 1:length(fHat);    

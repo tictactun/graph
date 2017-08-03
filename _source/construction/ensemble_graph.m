@@ -1,6 +1,6 @@
 function A = ensemble_graph(data, config, mdl)
     % params and vars
-    maxIter = 10000;
+    maxIter = 1000;
     nOut = 20;
     
     sigma = config('preSigma');
