@@ -1,4 +1,3 @@
-
 % Should  modify to make it realistic => get 1 new index only
 function [reData, wSet] = recover(dataX, dataY, avaiSampleSet, ...
             inputParams, config)
@@ -10,9 +9,7 @@ function [reData, wSet] = recover(dataX, dataY, avaiSampleSet, ...
     if rAvai > 0
         [dataX, mdl] = pregame(dataX, dataY, avaiSampleSet, config);
     end
- 
-%     mdl = learn_distance(dataX, dataY, 5);
-    
+
     % construct graph
     myGraph = construct_graph(dataX, avaiSampleSet, config, mdl);
     myGraph.data = dataY; % f includes unseen data

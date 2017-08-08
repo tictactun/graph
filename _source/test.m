@@ -1,4 +1,4 @@
-function [metric_graph, metric_lasso] = test(dataX, dataY, ...
+function [meanGraph, meanLasso] = test(dataX, dataY, ...
                                             inputParams, config)
     % Params
     nVertices = size(dataX, 1);
@@ -12,8 +12,8 @@ function [metric_graph, metric_lasso] = test(dataX, dataY, ...
     [reData, wSet] = recover(dataX, dataY, avaiSampleSet, ...
             inputParams, config);
     % Evaluation
-    metric_graph = evaluate_recovery(wSet, dataY, reData, config);             
+    meanGraph = evaluate_recovery(wSet, dataY, reData, config);             
     % baseline result - w or wSet
     w = 1: ceil(rMax * nVertices);
-    metric_lasso = get_baseline(dataX, dataY, wSet, config);
+    meanLasso = get_baseline(dataX, dataY, w, config);
 end

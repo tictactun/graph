@@ -2,7 +2,7 @@
     Project: Graph completion
     File: main
     Author: Tuan Dinh
-    Revised from the orignial verison of WonHwa Kim
+    Developed from the orignial verison of WonHwa Kim
     Description: graph completion 
 %}
 
@@ -20,15 +20,7 @@ function main(runMode)
     
     [inputPars, configs] = init();    
     % Load csv file into 2 parts: construction and completion
-    [dataX, dataY] = process_data(inputPars);     
-    
-%     [dataY, minY, rangeY] = scale_feature(dataY);
-%     configs('threshold') = (configs('threshold') - minY) / rangeY;
-    
-%     [dataY, inds] = sort(dataY, 'ascend');
-%     dataX = dataX(inds, :);  
-    % transform to keep montonically increasing order
-    
+    [dataX, dataY] = process_data(inputPars);       
     %{
     dataY = dataY(:, inputParams('yOffset'));
     load ../mmd/Xs.mat Xsource
@@ -37,19 +29,23 @@ function main(runMode)
     %}
     
     if 0 == runMode
-        [metric_graph, metric_lasso] = test(dataX, dataY, ...
+        [metrics, metric_lasso] = test(dataX, dataY, ...
             inputPars, configs);
+        metrics = metrics(6);
+        metric_lasso = metric_lasso(6);
     else
-        kFolds = 5; % number of folds 
         nIters = 100; % number of iters
-        [metric_graph, metric_lasso] = cross_validation(kFolds, ...
-            nIters, dataX, dataY, inputPars, configs, 2);
+        metrics = cross_validation(nIters, ...
+            dataX, dataY, inputPars, configs, runMode);
+        metrics = metrics.m;
     end
-    % Display        
+    
+    % Display
     fprintf('\t------Evaluation------\n');           
     fprintf('Graph completion:\n');
-    print_result(metric_graph);  
+    print_result(metrics);  
+    
     % Baseline result    
-    fprintf('Linear Regression:\n');
-    print_result(metric_lasso);
+%     fprintf('Linear Regression:\n');
+%     print_result(metric_lasso);
 end

@@ -10,7 +10,15 @@ function lGraph = construct_graph(dataX, avaiSampleSet, config, mdl)
     
     % normalize graph
     normA = normalize_matrix(A);
-
+%     normA = A/max(A(:));
+     
+ datetime = datestr(now);
+      datetime=strrep(datetime,':','_'); %Replace colon with underscore
+      datetime=strrep(datetime,'-','_');%Replace minus sign with underscore
+      datetime=strrep(datetime,' ','_');%Replace space with underscore
+      datetime = strcat('samp_graphs/',datetime,'.mat');      
+save(datetime, 'normA');
+    
     % Calculate Laplacian graph
     % for binary => dont need to normalize
     [V, D] = construct_laplacian(normA);
@@ -36,6 +44,7 @@ end
 
 % normalized matrix
 function normA = normalize_matrix(A)
-    normA =  A - min(A(:));
-    normA = normA ./ max(normA(:));
+%     normA =  A - min(A(:));
+%     normA = normA ./ max(normA(:));
+    normA = A;
 end

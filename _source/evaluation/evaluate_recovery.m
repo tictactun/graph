@@ -1,14 +1,14 @@
 % Norm 2 error
 function err = evaluate_recovery(wSet, trueData, predData, config)
     % Data
-    nVertices = size(trueData, 1);
-    notW = setdiff(1:nVertices, wSet);
+%     nVertices = size(trueData, 1);
+%     notW = setdiff(1:nVertices, wSet);
     
-    tSampled = trueData(wSet, :);
-    pSampled = predData(wSet, :);
-    
-    tUnSampled =  trueData(notW, :);
-    pUnSampled = predData(notW, :);
+%     tSampled = trueData(wSet, :);
+%     pSampled = predData(wSet, :);
+%     
+%     tUnSampled =  trueData(notW, :);
+%     pUnSampled = predData(notW, :);
 
     err = zeros(6, 1);
     % mean error %
@@ -26,15 +26,15 @@ function err = evaluate_recovery(wSet, trueData, predData, config)
 %     err(4) = get_accuracy(tSampled, pSampled, t, config('errorMode'));
         
     % For RMSE
-    err(5) = get_rmse(tUnSampled, pUnSampled);
-    err(6) = get_rmse(tSampled, pSampled);
+%     err(5) = get_rmse(tUnSampled, pUnSampled);
+    err(6) = get_rmse(trueData, predData);
 end
 
 % this makes more sense
 
 
 function error = get_rmse(y, p)
-    error = norm(y - p, 2)/sqrt(length(y));   
+    error = norm(y - p, 2) * 100; %/sqrt(length(y));   
 end
 
 function err = get_error(y, p, e)

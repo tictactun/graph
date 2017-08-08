@@ -11,7 +11,7 @@ function AMatrix = construct_adjacency(data, avaiSampleSet, config, mdl)
             for i = 1:nVertices-1
                 for j = i+1:nVertices
                     s(i, j) = get_similarity(data(i, :), data(j, :), ...
-                        config('preSigma'), config, mdl);
+                        config('preSigma'), config, mdl) + 0*rand(1);
                     s(j, i) = s(i, j);
                 end
             end
