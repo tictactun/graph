@@ -1,9 +1,9 @@
 function [X, y] = process_data(inputParams)
-   
     data = csvread(inputParams('filename'), 1, 0);    
-%     X = data(:, inputParams('xleft'): inputParams('xright'));
-    X = data(:, 1:end-5);
-    y = data(:, end-4:end); % 5 features
+    % Extract 
+    nFeatures = inputParams('nYFeatures');
+    X = data(:, 1:end-nFeatures);
+    y = data(:, end-nFeatures+1:end); % 5 features
     y = y(:, inputParams('yOffset'));
 
     % Remove outliers & Normalize

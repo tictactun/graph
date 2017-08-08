@@ -1,4 +1,4 @@
-function err = get_baseline(dataX, dataY, wSet, config) 
+function pred = get_baseline(dataX, dataY, wSet, config) 
     % train
     Xtrain = dataX(wSet, :);
     ytrain = dataY(wSet, :);
@@ -14,11 +14,10 @@ function err = get_baseline(dataX, dataY, wSet, config)
         case 3 % regresssion tree
             mdl = fitrtree(Xtrain, ytrain);
             pred = predict(mdl, dataX);
-        case 4 % ensemble
+        otherwise % ensemble
             mdl = fitrensemble(Xtrain, ytrain);
             pred = predict(mdl, dataX);
     end
-    err = evaluate_recovery(wSet, dataY, pred, config);
 end
 
 

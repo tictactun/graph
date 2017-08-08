@@ -1,9 +1,8 @@
 # graphCompletion
 Graph Completion 
 
-Configuration in setup.m
-- config.alg: 1 for simple random sampling, 2 for select&recover (default)
+Entry point: main.m
+Configurations: init.m
+Set path: set_path.m
 
-main.m: do and evaluate graph recovery
-
-plot_learning_curve.m
+In the beginning, you should run set_path, then run main with 2 params specified in main function.

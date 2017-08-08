@@ -4,23 +4,26 @@ function [inputParams, config] = init()
     config = containers.Map;
     
     % Input setting
-    inputParams('filename') = '../dataset/data702.csv'; % datafile
+    inputParams('filename') = '../dataset/data_cogGen.csv'; % datafile
     inputParams('rtrain')   = 1; % training set fraction
     
     inputParams('rAvaiSamples') = 0.3; % percentage of available samples
     inputParams('rMaxSamples')  = 0.5; % maximum (including available ones)
     
-    inputParams('xleft')    = 1;
-    inputParams('xright')   = 154;
-    
+    inputParams('nYFeatures')   = 5;
     inputParams('yOffset')  = 2; % from 1 to 5, index of the CSF feature
     
     % Experiment setting  
     config('alg')       = 2;    % 1 is for random sampling, 2 is for S&R
     config('epsilon')   = 0.1;  % acceptable tolerance 
+
+    config('errorMode') = 1;    % 1, 2, 3 for precision, recall, accuracy
+    config('errIdx')    = 1;    % 1 for rRMSE
+    config('nMetrics')  = 7;    
+    
     threshold = [630, 629.39, 568.08, 48.86, 0.77, 0.07]; % classification
     config('threshold') = threshold(inputParams('yOffset'));
-    config('errorMode') = 1;    % 1, 2, 3 for precision, recall, accuracy
+    
     config('baselineMode') = 2; % 1 - 4 methods
     
     % Graph construction
